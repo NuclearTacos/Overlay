@@ -126,6 +126,7 @@ function getElementTemplate(element){
     dataType: "application/json",
     url: 'https://storage.googleapis.com/storage/v1/b/'+element.bucket+'/o/'+element.object
   }).responseText).mediaLink;
+
   let elemTemplate = $.ajax({
       type: "GET",
       async: false,
@@ -136,8 +137,13 @@ function getElementTemplate(element){
   return elemTemplate;
 }
 
+function mergeSpellElement(spell,element){
+  $('#'+element.id+' .ph-level').html(spell.damage_type);
+  $('#'+element.id+' .ph-name').html(spell.name);
+  $('#'+element.id+' .ph-description').html(spell.description);
+}
+
 $(document).ready( function() {
-  //elementLifeCycle();
   let elementsData = getElementsData("dnd5e");
   let firebolt = elementsData.spells.filter( spell => spell.name == 'Fire Bolt')[0];
   
@@ -145,6 +151,8 @@ $(document).ready( function() {
 
   delay(1000).then( function(){
     let newElement = new OverlayElement(elementTemplate);
+    mergeSpellElement(firebolt, newElement);
+
     newElement.showCeremony();
     delay(3000).then( function() {
       newElement.hideCeremony();
