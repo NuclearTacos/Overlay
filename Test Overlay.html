@@ -113,7 +113,8 @@ async function elementLifeCycle(){
 }
 
 function getElementsData(gameName){
-  let demoData = "{\r\n    \"games\":[\r\n        {\r\n            \"name\": \"dnd5e\",\r\n            \"data\": {\r\n                \"spells\": [\r\n                    {\r\n                        \"name\": \"Fire Bolt\",\r\n                        \"level\": 0,\r\n                        \"damage_type\": \"fire\",\r\n                        \"description\": \"<p>You hurl a mote of fire at a creature or object within range. Make a ranged spell attack against the target. On a hit, the target takes 1d10 fire damage. A flammable object hit by this spell ignites if it isn\'t being worn or carried.<\/p><p>This spell\'s damage increases by 1d10 when you reach 5th level (2d10), 11th level (3d10), and 17th level (4d10).<\/p>\",\r\n                        \"bucket\": \"tf-overlays-db\",\r\n                        \"object\": \"basic-card.json\"\r\n                    }\r\n                ],\r\n                \"characters\": [\r\n\r\n                ],\r\n                \"rules\": [\r\n\r\n                ],\r\n                \"art\": [\r\n\r\n                ]\r\n            }\r\n        }\r\n    ]\r\n}"
+  // let demoData = "{\r\n    \"games\":[\r\n        {\r\n            \"name\": \"dnd5e\",\r\n            \"data\": {\r\n                \"spells\": [\r\n                    {\r\n                        \"name\": \"Fire Bolt\",\r\n                        \"level\": 0,\r\n                        \"damage_type\": \"fire\",\r\n                        \"description\": \"<p>You hurl a mote of fire at a creature or object within range. Make a ranged spell attack against the target. On a hit, the target takes 1d10 fire damage. A flammable object hit by this spell ignites if it isn\'t being worn or carried.<\/p><p>This spell\'s damage increases by 1d10 when you reach 5th level (2d10), 11th level (3d10), and 17th level (4d10).<\/p>\",\r\n                        \"bucket\": \"tf-overlays-db\",\r\n                        \"object\": \"basic-card.json\"\r\n                    }\r\n                ],\r\n                \"characters\": [\r\n\r\n                ],\r\n                \"rules\": [\r\n\r\n                ],\r\n                \"art\": [\r\n\r\n                ]\r\n            }\r\n        }\r\n    ]\r\n}"
+  let demoData = "{\r\n    \"games\":[\r\n        {\r\n            \"name\": \"dnd5e\",\r\n            \"data\": {\r\n                \"spells\": [\r\n                    {\r\n                        \"name\": \"Fire Bolt\",\r\n                        \"level\": \"Cantrip\",\r\n                        \"damage_type\": \"Fire\",\r\n                        \"description\": \"<p>You hurl a mote of fire at a creature or object within range. Make a ranged spell attack against the target. On a hit, the target takes 1d10 fire damage. A flammable object hit by this spell ignites if it isn\'t being worn or carried.<\/p><p>This spell\'s damage increases by 1d10 when you reach 5th level (2d10), 11th level (3d10), and 17th level (4d10).<\/p>\",\r\n                        \"bucket\": \"tf-overlays-db\",\r\n                        \"object\": \"basic-card.json\"\r\n                    },\r\n                    {\r\n                        \"name\": \"Magic Missile\",\r\n                        \"level\": \"1st\",\r\n                        \"damage_type\": \"Force\",\r\n                        \"description\": \"<p>You create three glowing darts of magical force. Each dart hits a creature of your choice that you can see within range. A dart deals 1d4 + 1 force damage to its target. The darts all strike simultaneously, and you can direct them to hit one creature or several.<\/p><p><b>At Higher Levels.<\/b> When you cast this spell using a spell slot of 2nd level or higher, the spell creates one more dart for each slot level above 1st.<\/p>\",\r\n                        \"bucket\": \"tf-overlays-db\",\r\n                        \"object\": \"basic-card.json\"\r\n                    }\r\n                ],\r\n                \"characters\": [\r\n\r\n                ],\r\n                \"rules\": [\r\n\r\n                ],\r\n                \"art\": [\r\n\r\n                ]\r\n            }\r\n        }\r\n    ]\r\n}";
   let responseObj = JSON.parse(demoData);
   
   return responseObj.games.filter( game => game.name == gameName )[0].data;
@@ -154,8 +155,24 @@ $(document).ready( function() {
     mergeSpellElement(firebolt, newElement);
 
     newElement.showCeremony();
-    delay(3000).then( function() {
+    delay(4000).then( function() {
       newElement.hideCeremony();
+    }).then( function(){
+
+      // then try the next spell
+      let magicMissile = elementsData.spells.filter( spell => spell.name == 'Magic Missile')[0];
+  
+      let elementTemplate2 = getElementTemplate(magicMissile);
+
+      delay(1000).then( function(){
+        let newElement = new OverlayElement(elementTemplate2);
+        mergeSpellElement(magicMissile, newElement);
+
+        newElement.showCeremony();
+        delay(4000).then( function() {
+          newElement.hideCeremony();
+        });
+      });
     });
   });
 });
