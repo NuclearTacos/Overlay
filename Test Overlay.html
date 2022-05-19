@@ -33,16 +33,6 @@
 </style>
 <body>
 
-<!-- <div class="overlay-container" style="display: none;">  
-  <div class="card border-dark mb-3" style="max-width: 18rem;">
-    <div class="card-header">Header</div>
-    <div class="card-body text-dark">
-      <h5 class="card-title">Dark card title</h5>
-      <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-    </div>
-  </div>
-</div> -->
-
 <div>
   <div class="bucket">
   </div>
@@ -61,10 +51,6 @@ function createGuid() {
 function delay(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
-
-// async function waitDelay(ms){
-//   await delay(ms);
-// }
 
 // end Helper Methods
 
@@ -108,7 +94,6 @@ class OverlayElement {
 // endclasses
 
 async function elementLifeCycle(){
-  // let cardData = "{\r\n    \"cardTemplate\": \"<div id=\\\"placeholder\\\" class=\\\"overlay-container\\\" style=\\\"display: none;\\\">  \\r\\n  <div class=\\\"card border-dark mb-3\\\" style=\\\"max-width: 18rem;\\\">\\r\\n    <div class=\\\"card-header\\\">Header<\\\/div>\\r\\n    <div class=\\\"card-body text-dark\\\">\\r\\n      <h5 class=\\\"card-title\\\">Dark card title<\\\/h5>\\r\\n      <p class=\\\"card-text\\\">Some quick example text to build on the card title and make up the bulk of the card\'s content.<\\\/p>\\r\\n    <\\\/div>\\r\\n  <\\\/div>\\r\\n<\\\/div>\",\r\n    \"showCeremony\": \"$('#'+id).fadeIn();\"\r\n}";
   let data = '{ "exCount": 0 }';
   let cardData = $.ajax({
     type: "POST",
@@ -117,11 +102,9 @@ async function elementLifeCycle(){
     url: "https://read-environment-var-kwrdwjisqa-uc.a.run.app",
     data: data
   }).responseText;
-  // cardData = cardData.replace('\\\\','\\')//.replace('\\r','').replace('\\n','')
-  ;
 
   {
-    await delay(2000);
+    await delay(1000);
     let newElement = new OverlayElement(cardData);
     newElement.showCeremony();
     await delay(3000);
@@ -129,12 +112,52 @@ async function elementLifeCycle(){
   }
 }
 
-$(document).ready( function() {
+function getElementsData(gameName){
+  let demoData = "{\r\n    \"games\":[\r\n        {\r\n            \"name\": \"dnd5e\",\r\n            \"data\": {\r\n                \"spells\": [\r\n                    {\r\n                        \"name\": \"Fire Bolt\",\r\n                        \"level\": 0,\r\n                        \"damage_type\": \"fire\",\r\n                        \"description\": \"<p>You hurl a mote of fire at a creature or object within range. Make a ranged spell attack against the target. On a hit, the target takes 1d10 fire damage. A flammable object hit by this spell ignites if it isn\'t being worn or carried.<\/p><p>This spell\'s damage increases by 1d10 when you reach 5th level (2d10), 11th level (3d10), and 17th level (4d10).<\/p>\",\r\n                        \"bucket\": \"tf-overlays-db\",\r\n                        \"object\": \"basic-card.json\"\r\n                    }\r\n                ],\r\n                \"characters\": [\r\n\r\n                ],\r\n                \"rules\": [\r\n\r\n                ],\r\n                \"art\": [\r\n\r\n                ]\r\n            }\r\n        }\r\n    ]\r\n}"
+  let responseObj = JSON.parse(demoData);
   
-  elementLifeCycle();
+  return responseObj.games.filter( game => game.name == gameName )[0].data;
+}
+
+function getElementTemplate(element){
+  var cardUrl = JSON.parse( $.ajax({
+    type: "GET",
+    async: false,
+    dataType: "application/json",
+    url: 'https://storage.googleapis.com/storage/v1/b/'+element.bucket+'/o/'+element.object
+  }).responseText).mediaLink;
+  let elemTemplate = $.ajax({
+      type: "GET",
+      async: false,
+      dataType: "application/json",
+      url: cardUrl
+    }).responseText;
+
+  return elemTemplate;
+}
+
+$(document).ready( function() {
+  //elementLifeCycle();
+  let elementsData = getElementsData("dnd5e");
+  let firebolt = elementsData.spells.filter( spell => spell.name == 'Fire Bolt')[0];
+  
+  let elementTemplate = getElementTemplate(firebolt);
+
+  delay(1000).then( function(){
+    let newElement = new OverlayElement(elementTemplate);
+    newElement.showCeremony();
+    delay(3000).then( function() {
+      newElement.hideCeremony();
+    });
+  });
 });
 
 </script>
 
 </body>
+<!--
+It might be better if you use a Markdown to HTML converter.
+I recommend ShowdownJS. Just add it to your project with
+<script src="https://cdnjs.cloudflare.com/ajax/libs/showdown/1.9.0/showdown.min.js"></script>
+-->
 </html>
