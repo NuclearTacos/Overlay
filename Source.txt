@@ -1,0 +1,7 @@
+$.ajax({
+    type: "POST",
+    async: false,
+    dataType: "application/json",
+    url: "https://read-environement-var2-kwrdwjisqa-uc.a.run.app",
+    data: data
+}).responseText

@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html>
+<!-- CSS only -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/css/bootstrap.min.css"
+  rel="stylesheet" integrity="sha384-0evHe/X+R7YkIZDRvuzKMRqM+OrBnVFBL6DOitfPri4tjfHxaWutUpFmBp4vmVor"
+  crossorigin="anonymous">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+
+
+  
+<style>
+.overlay-container {  
+  align-items: center;
+  justify-content: center;
+  margin: auto;
+  width: fit-content;
+}
+  
+#container {
+  width: 400px;
+  height: 400px;
+  position: relative;
+
+  /*background: blue;*/
+}
+
+#animate {
+  width: 50px;
+  height: 50px;
+  position: relative;
+  background-color: red;
+}
+</style>
+<body>
+
+<!-- <div class="overlay-container" style="display: none;">  
+  <div class="card border-dark mb-3" style="max-width: 18rem;">
+    <div class="card-header">Header</div>
+    <div class="card-body text-dark">
+      <h5 class="card-title">Dark card title</h5>
+      <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+    </div>
+  </div>
+</div> -->
+
+<div>
+  <div class="bucket">
+  </div>
+</div>
+
+
+<script>
+// Helper Methods
+function createGuid() {
+   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+      var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+      return v.toString(16);
+   });
+}
+
+function delay(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function waitDelay(ms){
+  await delay(ms);
+}
+
+// end Helper Methods
+
+// classes
+class OverlayElement {
+  get id(){
+    return this._id;
+  }
+
+  get cardTemplate(){
+    return this._cardTemplate;
+  }
+
+  showCeremony(){
+    const showCode = "{ let id = '"+this._id+"';"+this._showCeremony+" }";
+    setTimeout(showCode, 1);
+  }
+
+  hideCeremony(){
+    const hideCode = "{ let id = '"+this._id+"';"+this._removeCeremony+" }";
+    setTimeout(hideCode, 1);
+  }
+
+  updateTemplateId(){
+    this._cardTemplate = $(this._cardTemplate).attr('id',this._id).prop('outerHTML');
+  }
+
+  constructor(jsonConfig) {
+    this._id = createGuid();
+    this._config = JSON.parse(jsonConfig);
+    
+    this._cardTemplate = this._config.cardTemplate;
+    this._showCeremony = this._config.showCeremony;
+    this._removeCeremony = this._config.removeCeremony;
+
+    this.updateTemplateId();
+
+    $('.bucket').append(this._cardTemplate);
+  }
+}
+// endclasses
+
+// async function oscillateFade(elem)
+// {
+//   // let elems = $('.overlay-container');
+//   let exCount = 0;
+  
+//   while(true){
+//     exCount = getHelloWorld(exCount);
+
+//     // elems.fadeIn();
+//     // elem.showCeremony();
+//     $('#'+elem.id).fadeIn();
+//     await delay(3000);
+//     // elem.fadeOut();
+//     $('#'+elem.id).fadeOut();
+//     await delay(1000);
+//   }
+// }
+
+//Next stop, getting the function to storeretrieve values :)
+  
+// function getHelloWorld( num ){
+//   let data = '{ "exCount": '+num+' }';
+//   let responseCount = $.ajax({
+//     type: "POST",
+//     async: false,
+//     dataType: "application/json",
+//     url: "https://read-environement-var2-kwrdwjisqa-uc.a.run.app",
+//     data: data
+//   }).responseText
+
+//   $('.card-header').html(responseCount);
+//   return responseCount;
+// }
+
+async function elementLifeCycle(){
+  // let cardData = "{\r\n    \"cardTemplate\": \"<div id=\\\"placeholder\\\" class=\\\"overlay-container\\\" style=\\\"display: none;\\\">  \\r\\n  <div class=\\\"card border-dark mb-3\\\" style=\\\"max-width: 18rem;\\\">\\r\\n    <div class=\\\"card-header\\\">Header<\\\/div>\\r\\n    <div class=\\\"card-body text-dark\\\">\\r\\n      <h5 class=\\\"card-title\\\">Dark card title<\\\/h5>\\r\\n      <p class=\\\"card-text\\\">Some quick example text to build on the card title and make up the bulk of the card\'s content.<\\\/p>\\r\\n    <\\\/div>\\r\\n  <\\\/div>\\r\\n<\\\/div>\",\r\n    \"showCeremony\": \"$('#'+id).fadeIn();\"\r\n}";
+  let data = '{ "exCount": 0 }';
+  let cardData = $.ajax({
+    type: "POST",
+    async: false,
+    dataType: "application/json",
+    url: "https://read-environment-var-kwrdwjisqa-uc.a.run.app",
+    data: data
+  }).responseText;
+  // cardData = cardData.replace('\\\\','\\')//.replace('\\r','').replace('\\n','')
+  ;
+
+  {
+    await delay(2000);
+    let newElement = new OverlayElement(cardData);
+    newElement.showCeremony();
+    await delay(3000);
+    newElement.hideCeremony();
+  }
+
+  // oscillateFade(newElement);
+  // $('.bucket').append(newElement.cardTemplate);
+  // $('#placeholder').attr('id',newElement.id)
+}
+
+$(document).ready( function() {
+  
+  elementLifeCycle();
+});
+
+</script>
+
+</body>
+</html>
