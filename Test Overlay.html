@@ -62,9 +62,9 @@ function delay(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-async function waitDelay(ms){
-  await delay(ms);
-}
+// async function waitDelay(ms){
+//   await delay(ms);
+// }
 
 // end Helper Methods
 
@@ -107,40 +107,6 @@ class OverlayElement {
 }
 // endclasses
 
-// async function oscillateFade(elem)
-// {
-//   // let elems = $('.overlay-container');
-//   let exCount = 0;
-  
-//   while(true){
-//     exCount = getHelloWorld(exCount);
-
-//     // elems.fadeIn();
-//     // elem.showCeremony();
-//     $('#'+elem.id).fadeIn();
-//     await delay(3000);
-//     // elem.fadeOut();
-//     $('#'+elem.id).fadeOut();
-//     await delay(1000);
-//   }
-// }
-
-//Next stop, getting the function to storeretrieve values :)
-  
-// function getHelloWorld( num ){
-//   let data = '{ "exCount": '+num+' }';
-//   let responseCount = $.ajax({
-//     type: "POST",
-//     async: false,
-//     dataType: "application/json",
-//     url: "https://read-environement-var2-kwrdwjisqa-uc.a.run.app",
-//     data: data
-//   }).responseText
-
-//   $('.card-header').html(responseCount);
-//   return responseCount;
-// }
-
 async function elementLifeCycle(){
   // let cardData = "{\r\n    \"cardTemplate\": \"<div id=\\\"placeholder\\\" class=\\\"overlay-container\\\" style=\\\"display: none;\\\">  \\r\\n  <div class=\\\"card border-dark mb-3\\\" style=\\\"max-width: 18rem;\\\">\\r\\n    <div class=\\\"card-header\\\">Header<\\\/div>\\r\\n    <div class=\\\"card-body text-dark\\\">\\r\\n      <h5 class=\\\"card-title\\\">Dark card title<\\\/h5>\\r\\n      <p class=\\\"card-text\\\">Some quick example text to build on the card title and make up the bulk of the card\'s content.<\\\/p>\\r\\n    <\\\/div>\\r\\n  <\\\/div>\\r\\n<\\\/div>\",\r\n    \"showCeremony\": \"$('#'+id).fadeIn();\"\r\n}";
   let data = '{ "exCount": 0 }';
@@ -161,10 +127,6 @@ async function elementLifeCycle(){
     await delay(3000);
     newElement.hideCeremony();
   }
-
-  // oscillateFade(newElement);
-  // $('.bucket').append(newElement.cardTemplate);
-  // $('#placeholder').attr('id',newElement.id)
 }
 
 $(document).ready( function() {
