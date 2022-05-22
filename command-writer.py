@@ -7,6 +7,7 @@ from google.appengine.api import app_identity
 """
 
 from google.cloud import storage
+# import google-cloud-storage as storage
 
 import requests
 import functions_framework
@@ -28,22 +29,20 @@ def hello_http(request):
     # https://developer.mozilla.org/en-US/docs/Glossary/Preflight_request
     # for more information.
 
-    # Set CORS headers for preflight requests
-    #  or request.method == 'GET'
+    # Set CORS headers for the preflight request
     if request.method == 'OPTIONS':
-        # Allows GET requests from origin https://mydomain.com with
-        # Authorization header
+        # Allows GET requests from any origin with the Content-Type
+        # header and caches preflight response for an 3600s
         headers = {
             'Access-Control-Allow-Origin': '*',
             'Access-Control-Allow-Methods': '*',
-            'Access-Control-Allow-Headers': 'Authorization',
-            'Access-Control-Max-Age': '3600',
-            'Access-Control-Allow-Credentials': 'true'
+            'Access-Control-Allow-Headers': 'Content-Type',
+            'Access-Control-Max-Age': '3600'
         }
+
         return ('', 204, headers)
 
-    # Set CORS headers for main requests
-    # Methods line is new in this segment
+    # Set CORS headers for the main request
     headers = {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Methods': '*',
@@ -61,6 +60,9 @@ def hello_http(request):
       
     url = requests.get("https://storage.googleapis.com/tf-overlays-db/basic-card.json")
     
+
+    command_data = request.data
+
     bucket_name = 'tf-overlays-db'
     file_name = 'active-command.json'
 
@@ -68,7 +70,7 @@ def hello_http(request):
     bucket = client.get_bucket(bucket_name)
 
     blob=bucket.blob(file_name)
-    blob.upload_from_string('{ "some_test": "Some data :)" }')
+    blob.upload_from_string(command_data)
 
 
     """
@@ -84,5 +86,8 @@ def hello_http(request):
     gcs_file
     """
 
+    
+    # response = make_response('{ "some_test": "Some data :)" }', 200, headers )
 
-    return ('{ "some_test": "Some data :)" }', 200, headers)
+    return ( command_data , 200, headers )
+    # return ( command_data , 200, headers )
