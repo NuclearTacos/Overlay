@@ -52,6 +52,23 @@ function delay(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+function bucketRequest(bucketName, fileRoute){
+  let blobUrl = JSON.parse( $.ajax({
+    type: "GET",
+    async: false,
+    dataType: "application/json",
+    url: 'https://storage.googleapis.com/storage/v1/b/'+bucketName+'/o/'+fileRoute
+  }).responseText).mediaLink;
+
+  let blobData = $.ajax({
+      type: "GET",
+      async: false,
+      dataType: "application/json",
+      url: blobUrl
+    }).responseText;
+  
+  return blobData;
+}
 // end Helper Methods
 
 // classes
@@ -93,6 +110,42 @@ class OverlayElement {
 }
 // endclasses
 
+// cloudcommands
+function uploadDatabase(dataObj){
+  return $.ajax({
+    type: "POST",
+    async: false,
+    dataType: "application/json",
+    url: "https://upload-data-kwrdwjisqa-uc.a.run.app",
+    data: JSON.stringify(dataObj)
+  });
+}
+
+function readDatabase(){
+  return bucketRequest('tf-overlays-db','data.json');
+}
+
+function postOverlaysCommand(command){
+  let commandObject = {
+    "id": createGuid(),
+    "command": command
+  }
+
+  let cardData = $.ajax({
+    type: "POST",
+    async: false,
+    dataType: "application/json",
+    url: "https://write-command-kwrdwjisqa-uc.a.run.app",
+    data: JSON.stringify(commandObject)
+  }).responseText;
+}
+
+
+// todo: make this check against the Id of the last processed command.
+function readOverlaysCommand(){
+  return JSON.parse( bucketRequest('tf-overlays-db','active-command.json') ).command;
+}
+
 async function elementLifeCycle(){
   let data = '{ "exCount": 0 }';
   let cardData = $.ajax({
@@ -111,29 +164,50 @@ async function elementLifeCycle(){
     newElement.hideCeremony();
   }
 }
+// endcloudcommands
 
 function getElementsData(gameName){
-  // let demoData = "{\r\n    \"games\":[\r\n        {\r\n            \"name\": \"dnd5e\",\r\n            \"data\": {\r\n                \"spells\": [\r\n                    {\r\n                        \"name\": \"Fire Bolt\",\r\n                        \"level\": 0,\r\n                        \"damage_type\": \"fire\",\r\n                        \"description\": \"<p>You hurl a mote of fire at a creature or object within range. Make a ranged spell attack against the target. On a hit, the target takes 1d10 fire damage. A flammable object hit by this spell ignites if it isn\'t being worn or carried.<\/p><p>This spell\'s damage increases by 1d10 when you reach 5th level (2d10), 11th level (3d10), and 17th level (4d10).<\/p>\",\r\n                        \"bucket\": \"tf-overlays-db\",\r\n                        \"object\": \"basic-card.json\"\r\n                    }\r\n                ],\r\n                \"characters\": [\r\n\r\n                ],\r\n                \"rules\": [\r\n\r\n                ],\r\n                \"art\": [\r\n\r\n                ]\r\n            }\r\n        }\r\n    ]\r\n}"
-  let demoData = "{\r\n    \"games\":[\r\n        {\r\n            \"name\": \"dnd5e\",\r\n            \"data\": {\r\n                \"spells\": [\r\n                    {\r\n                        \"name\": \"Fire Bolt\",\r\n                        \"level\": \"Cantrip\",\r\n                        \"damage_type\": \"Fire\",\r\n                        \"description\": \"<p>You hurl a mote of fire at a creature or object within range. Make a ranged spell attack against the target. On a hit, the target takes 1d10 fire damage. A flammable object hit by this spell ignites if it isn\'t being worn or carried.<\/p><p>This spell\'s damage increases by 1d10 when you reach 5th level (2d10), 11th level (3d10), and 17th level (4d10).<\/p>\",\r\n                        \"bucket\": \"tf-overlays-db\",\r\n                        \"object\": \"basic-card.json\"\r\n                    },\r\n                    {\r\n                        \"name\": \"Magic Missile\",\r\n                        \"level\": \"1st\",\r\n                        \"damage_type\": \"Force\",\r\n                        \"description\": \"<p>You create three glowing darts of magical force. Each dart hits a creature of your choice that you can see within range. A dart deals 1d4 + 1 force damage to its target. The darts all strike simultaneously, and you can direct them to hit one creature or several.<\/p><p><b>At Higher Levels.<\/b> When you cast this spell using a spell slot of 2nd level or higher, the spell creates one more dart for each slot level above 1st.<\/p>\",\r\n                        \"bucket\": \"tf-overlays-db\",\r\n                        \"object\": \"basic-card.json\"\r\n                    }\r\n                ],\r\n                \"characters\": [\r\n\r\n                ],\r\n                \"rules\": [\r\n\r\n                ],\r\n                \"art\": [\r\n\r\n                ]\r\n            }\r\n        }\r\n    ]\r\n}";
+  let demoData = bucketRequest('tf-overlays-db','data.json');
   let responseObj = JSON.parse(demoData);
   
-  return responseObj.games.filter( game => game.name == gameName )[0].data;
+  return responseObj.games.filter( game => game.key == gameName )[0].data;
+}
+
+// command structure:
+// game.dnd5e/spells.fire_bolt
+function processCommand(command){
+  let data = JSON.parse(readDatabase());
+  let propArray = command.split('/');
+
+  let currentObj = data;
+  propArray.forEach(element => {
+    let commandPropertyKey = element.split('.')[0];
+    let commandPropertyValue = element.split('.')[1];
+    
+    currentObj = currentObj[commandPropertyKey].filter( comm => comm.key == commandPropertyValue )[0];
+  });
+  
+  if( ''+currentObj.cardTemplate != '' ){
+    return currentObj;
+  }
 }
 
 function getElementTemplate(element){
-  var cardUrl = JSON.parse( $.ajax({
-    type: "GET",
-    async: false,
-    dataType: "application/json",
-    url: 'https://storage.googleapis.com/storage/v1/b/'+element.bucket+'/o/'+element.object
-  }).responseText).mediaLink;
+  // var cardUrl = JSON.parse( $.ajax({
+  //   type: "GET",
+  //   async: false,
+  //   dataType: "application/json",
+  //   url: 'https://storage.googleapis.com/storage/v1/b/'+element.bucket+'/o/'+element.object
+  // }).responseText).mediaLink;
 
-  let elemTemplate = $.ajax({
-      type: "GET",
-      async: false,
-      dataType: "application/json",
-      url: cardUrl
-    }).responseText;
+  // let elemTemplate = $.ajax({
+  //     type: "GET",
+  //     async: false,
+  //     dataType: "application/json",
+  //     url: cardUrl
+  //   }).responseText;
+  
+  elemTemplate = bucketRequest(element.bucket, element.object);
 
   return elemTemplate;
 }
@@ -144,9 +218,13 @@ function mergeSpellElement(spell,element){
   $('#'+element.id+' .ph-description').html(spell.description);
 }
 
+let activeCommand = ''
+
 $(document).ready( function() {
-  let elementsData = getElementsData("dnd5e");
-  let firebolt = elementsData.spells.filter( spell => spell.name == 'Fire Bolt')[0];
+  // let elementsData = getElementsData("dnd5e");
+  // let firebolt = elementsData.spells.filter( spell => spell.name == 'Fire Bolt')[0];
+  postOverlaysCommand('games.dnd5e/spells.fire_bolt');
+  let firebolt = processCommand(readOverlaysCommand());
   
   let elementTemplate = getElementTemplate(firebolt);
 
@@ -160,7 +238,9 @@ $(document).ready( function() {
     }).then( function(){
 
       // then try the next spell
-      let magicMissile = elementsData.spells.filter( spell => spell.name == 'Magic Missile')[0];
+      // let magicMissile = elementsData.spells.filter( spell => spell.name == 'Magic Missile')[0];
+      postOverlaysCommand('games.dnd5e/spells.magic_missile');
+      let magicMissile = processCommand(readOverlaysCommand());
   
       let elementTemplate2 = getElementTemplate(magicMissile);
 
@@ -175,6 +255,11 @@ $(document).ready( function() {
       });
     });
   });
+
+  // read command on interval
+  // setInterval(() => {
+  //   console.log( readOverlaysCommand() );
+  // }, 1000);
 });
 
 </script>
