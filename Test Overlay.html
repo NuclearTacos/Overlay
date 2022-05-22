@@ -110,14 +110,38 @@ class OverlayElement {
 }
 // endclasses
 
-async function postOverlaysCommand(command){
+// cloudcommands
+function uploadDatabase(dataObj){
+  return $.ajax({
+    type: "POST",
+    async: false,
+    dataType: "application/json",
+    url: "https://upload-data-kwrdwjisqa-uc.a.run.app",
+    data: JSON.stringify(dataObj)
+  });
+}
+
+function readOverlaysCommand(){
+  return bucketRequest('tf-overlays-db','data.json');
+}
+
+function postOverlaysCommand(command){
+  let commandObject = {
+    "id": createGuid(),
+    "command": command
+  }
+
   let cardData = $.ajax({
     type: "POST",
     async: false,
     dataType: "application/json",
     url: "https://write-command-kwrdwjisqa-uc.a.run.app",
-    data: command
+    data: JSON.stringify(commandObject)
   }).responseText;
+}
+
+function readOverlaysCommand(){
+  return bucketRequest('tf-overlays-db','active-command.json');
 }
 
 async function elementLifeCycle(){
@@ -138,12 +162,21 @@ async function elementLifeCycle(){
     newElement.hideCeremony();
   }
 }
+// endcloudcommands
 
 function getElementsData(gameName){
   let demoData = bucketRequest('tf-overlays-db','data.json');
   let responseObj = JSON.parse(demoData);
   
   return responseObj.games.filter( game => game.name == gameName )[0].data;
+}
+
+function processCommand(command){
+
+
+  let propArray = command.split('.');
+
+  
 }
 
 function getElementTemplate(element){
@@ -203,6 +236,11 @@ $(document).ready( function() {
       });
     });
   });
+
+  // read command on interval
+  // setInterval(() => {
+  //   console.log( readOverlaysCommand() );
+  // }, 1000);
 });
 
 </script>
