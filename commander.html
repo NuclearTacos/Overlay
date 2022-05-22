@@ -7,8 +7,9 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 
 <style>
-.left-gutter > .row {
-    padding-top: 12px;
+.left-panel-button {
+    margin-top: 12px;
+    width:100%;
 }
 
 .card-body {
@@ -41,22 +42,14 @@
             <div id="selector-game" class="container-fluid left-gutter">
                 <div class="row">
                     <button type="button" data="dnd5e" class="btn left-panel-button btn-primary btn-lg">D&D 5e</button>
-                </div>
-                <div class="row">
                     <button type="button" class="btn left-panel-button btn-primary btn-lg">something else</button>
                 </div>
             </div>
             <div id="selector-category" class="container-fluid left-gutter">
                 <div class="row">
                     <button type="button" data="spells" class="btn left-panel-button btn-primary btn-lg">Spells</button>
-                </div>
-                <div class="row">
                     <button type="button" data="characters" class="btn left-panel-button btn-primary btn-lg">Characters</button>
-                </div>
-                <div class="row">
                     <button type="button" data="rules" class="btn left-panel-button btn-primary btn-lg">Rules</button>
-                </div>
-                <div class="row">
                     <button type="button" data="art" class="btn left-panel-button btn-primary btn-lg">Art</button>
                 </div>
             </div>
@@ -73,7 +66,9 @@
                     <div class="card select-card">
                         <div class="card-body">
                             <h5 class="card-title">Card title</h5>
-                            <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+                            <div class="card-text">
+                                Some quick example text to build on the card title and make up the bulk of the card's content.
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -81,7 +76,9 @@
                     <div class="card select-card">
                         <div class="card-body">
                             <h5 class="card-title">Card title</h5>
-                            <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+                            <div class="card-text">
+                                Some quick example text to build on the card title and make up the bulk of the card's content.
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -89,7 +86,9 @@
                     <div class="card select-card">
                         <div class="card-body">
                             <h5 class="card-title">Card title</h5>
-                            <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+                            <div class="card-text">
+                                Some quick example text to build on the card title and make up the bulk of the card's content.
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -97,7 +96,9 @@
                     <div class="card select-card">
                         <div class="card-body">
                             <h5 class="card-title">Card title</h5>
-                            <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+                            <div class="card-text">
+                                Some quick example text to build on the card title and make up the bulk of the card's content.
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -105,13 +106,29 @@
                     <div class="card select-card">
                         <div class="card-body">
                             <h5 class="card-title">Card title</h5>
-                            <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+                            <div class="card-text">
+                                Some quick example text to build on the card title and make up the bulk of the card's content.
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+</div>
+
+<div class="template-elements" style="display:none;">
+    <div id="template-spell" class="col-4">
+        <div class="card select-card">
+            <div class="card-body">
+                <h5 class="card-title">Card title</h5>
+                <div class="card-text">
+                    Some quick example text to build on the card title and make up the bulk of the card's content.
+                </div>
+            </div>
+        </div>
+    </div>
+    <button id="template-left-menu-item" type="button" data="spells" class="btn left-panel-button btn-primary btn-lg">Spells</button>
 </div>
 
 <script>
