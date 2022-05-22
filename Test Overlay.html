@@ -140,8 +140,10 @@ function postOverlaysCommand(command){
   }).responseText;
 }
 
+
+// todo: make this check against the Id of the last processed command.
 function readOverlaysCommand(){
-  return bucketRequest('tf-overlays-db','active-command.json');
+  return JSON.parse( bucketRequest('tf-overlays-db','active-command.json') ).command;
 }
 
 async function elementLifeCycle(){
@@ -168,15 +170,26 @@ function getElementsData(gameName){
   let demoData = bucketRequest('tf-overlays-db','data.json');
   let responseObj = JSON.parse(demoData);
   
-  return responseObj.games.filter( game => game.name == gameName )[0].data;
+  return responseObj.games.filter( game => game.key == gameName )[0].data;
 }
 
+// command structure:
+// game.dnd5e/spells.fire_bolt
 function processCommand(command){
+  let data = JSON.parse(readDatabase());
+  let propArray = command.split('/');
 
-
-  let propArray = command.split('.');
-
+  let currentObj = data;
+  propArray.forEach(element => {
+    let commandPropertyKey = element.split('.')[0];
+    let commandPropertyValue = element.split('.')[1];
+    
+    currentObj = currentObj[commandPropertyKey].filter( comm => comm.key == commandPropertyValue )[0];
+  });
   
+  if( ''+currentObj.cardTemplate != '' ){
+    return currentObj;
+  }
 }
 
 function getElementTemplate(element){
@@ -205,9 +218,13 @@ function mergeSpellElement(spell,element){
   $('#'+element.id+' .ph-description').html(spell.description);
 }
 
+let activeCommand = ''
+
 $(document).ready( function() {
-  let elementsData = getElementsData("dnd5e");
-  let firebolt = elementsData.spells.filter( spell => spell.name == 'Fire Bolt')[0];
+  // let elementsData = getElementsData("dnd5e");
+  // let firebolt = elementsData.spells.filter( spell => spell.name == 'Fire Bolt')[0];
+  postOverlaysCommand('games.dnd5e/spells.fire_bolt');
+  let firebolt = processCommand(readOverlaysCommand());
   
   let elementTemplate = getElementTemplate(firebolt);
 
@@ -221,7 +238,9 @@ $(document).ready( function() {
     }).then( function(){
 
       // then try the next spell
-      let magicMissile = elementsData.spells.filter( spell => spell.name == 'Magic Missile')[0];
+      // let magicMissile = elementsData.spells.filter( spell => spell.name == 'Magic Missile')[0];
+      postOverlaysCommand('games.dnd5e/spells.magic_missile');
+      let magicMissile = processCommand(readOverlaysCommand());
   
       let elementTemplate2 = getElementTemplate(magicMissile);
 
