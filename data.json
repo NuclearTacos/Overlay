@@ -1,47 +1,45 @@
 {
     "games":[
         {
-            "name": "dnd5e",
-            "data": {
-                "spells": [
-                    {
-                        "key": "fire_bolt",
-                        "name": "Fire Bolt",
-                        "level": "Cantrip",
-                        "damage_type": "Fire",
-                        "description": "<p>You hurl a mote of fire at a creature or object within range. Make a ranged spell attack against the target. On a hit, the target takes 1d10 fire damage. A flammable object hit by this spell ignites if it isn't being worn or carried.</p><p>This spell's damage increases by 1d10 when you reach 5th level (2d10), 11th level (3d10), and 17th level (4d10).</p>",
-                        "bucket": "tf-overlays-db",
-                        "object": "basic-card.json"
-                    },
-                    {
-                        "key": "magic_missile",
-                        "name": "Magic Missile",
-                        "level": "1st",
-                        "damage_type": "Force",
-                        "description": "<p>You create three glowing darts of magical force. Each dart hits a creature of your choice that you can see within range. A dart deals 1d4 + 1 force damage to its target. The darts all strike simultaneously, and you can direct them to hit one creature or several.</p><p><b>At Higher Levels.</b> When you cast this spell using a spell slot of 2nd level or higher, the spell creates one more dart for each slot level above 1st.</p>",
-                        "bucket": "tf-overlays-db",
-                        "object": "basic-card.json"
-                    },
-                    {
-                        "key": "fireball",
-                        "name": "Fireball",
-                        "level": "3rd",
-                        "damage_type": "Fire",
-                        "description": "<p>A bright streak flashes from your pointing finger to a point you choose within range and then blossoms with a low roar into an explosion of flame. Each creature in a 20-foot-radius sphere centered on that point must make a Dexterity saving throw. A target takes 8d6 fire damage on a failed save, or half as much damage on a successful one.</p><p>The fire spreads around corners. It ignites flammable objects in the area that aren't being worn or carried.</p><p><b>At Higher Levels.</b> When you cast this spell using a spell slot of 4th level or higher, the damage increases by 1d6 for each slot level above 3rd.</p>",
-                        "bucket": "tf-overlays-db",
-                        "object": "basic-card.json"
-                    }
-                ],
-                "characters": [
+            "key": "dnd5e",
+            "spells": [
+                {
+                    "key": "fire_bolt",
+                    "name": "Fire Bolt",
+                    "level": "Cantrip",
+                    "damage_type": "Fire",
+                    "description": "<p>You hurl a mote of fire at a creature or object within range. Make a ranged spell attack against the target. On a hit, the target takes 1d10 fire damage. A flammable object hit by this spell ignites if it isn't being worn or carried.</p><p>This spell's damage increases by 1d10 when you reach 5th level (2d10), 11th level (3d10), and 17th level (4d10).</p>",
+                    "bucket": "tf-overlays-db",
+                    "object": "basic-card.json"
+                },
+                {
+                    "key": "magic_missile",
+                    "name": "Magic Missile",
+                    "level": "1st",
+                    "damage_type": "Force",
+                    "description": "<p>You create three glowing darts of magical force. Each dart hits a creature of your choice that you can see within range. A dart deals 1d4 + 1 force damage to its target. The darts all strike simultaneously, and you can direct them to hit one creature or several.</p><p><b>At Higher Levels.</b> When you cast this spell using a spell slot of 2nd level or higher, the spell creates one more dart for each slot level above 1st.</p>",
+                    "bucket": "tf-overlays-db",
+                    "object": "basic-card.json"
+                },
+                {
+                    "key": "fireball",
+                    "name": "Fireball",
+                    "level": "3rd",
+                    "damage_type": "Fire",
+                    "description": "<p>A bright streak flashes from your pointing finger to a point you choose within range and then blossoms with a low roar into an explosion of flame. Each creature in a 20-foot-radius sphere centered on that point must make a Dexterity saving throw. A target takes 8d6 fire damage on a failed save, or half as much damage on a successful one.</p><p>The fire spreads around corners. It ignites flammable objects in the area that aren't being worn or carried.</p><p><b>At Higher Levels.</b> When you cast this spell using a spell slot of 4th level or higher, the damage increases by 1d6 for each slot level above 3rd.</p>",
+                    "bucket": "tf-overlays-db",
+                    "object": "basic-card.json"
+                }
+            ],
+            "characters": [
 
-                ],
-                "rules": [
+            ],
+            "rules": [
 
-                ],
-                "art": [
+            ],
+            "art": [
 
-                ]
-            }
+            ]
         }
     ]
 }
