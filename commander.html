@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html>
+<!-- CSS only -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/css/bootstrap.min.css"
+  rel="stylesheet" integrity="sha384-0evHe/X+R7YkIZDRvuzKMRqM+OrBnVFBL6DOitfPri4tjfHxaWutUpFmBp4vmVor"
+  crossorigin="anonymous">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+
+<style>
+.left-panel-button {
+    margin-top: 12px;
+    width:100%;
+}
+
+.card-body {
+    text-overflow: clip;
+    overflow: hidden;
+}
+
+.select-card {
+    height: 10rem;
+    margin-bottom: 12px;
+}
+</style>
+<body>
+
+<div class="d-flex justify-content-between">
+    <div id="col" class="p-2 w-25 align-self-center page-2 page-3">
+        <button id="btn-nav-back" type="button" class="btn btn-light" onclick="buttonBackClick()">&lt; Back</button>
+    </div>
+    <div class="p-2 w-auto flex-grow-1 page-1 page-2 page-3">
+        <h1 id="title-name" class="text-center">PageName</h1>
+    </div>
+    <div class="p-2 w-25 align-self-center page-2 page-3" style="height:fit-content;">
+        <h4 id="title-game-name" class="text-center" style="margin:0;"></h4>
+    </div>
+</div>
+<hr style="margin:0px">
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-3">
+            <div id="selector-game" class="container-fluid left-gutter page-1">
+                <div class="row">
+                    <button type="button" data="dnd5e" class="btn left-panel-button btn-primary btn-lg">D&D 5e</button>
+                    <button type="button" class="btn left-panel-button btn-primary btn-lg">something else</button>
+                </div>
+            </div>
+            <div id="selector-category" class="container-fluid left-gutter page-2 page-3">
+                <div class="row">
+                    <button type="button" data="spells" class="btn left-panel-button btn-primary btn-lg">Spells</button>
+                    <button type="button" data="characters" class="btn left-panel-button btn-primary btn-lg">Characters</button>
+                    <button type="button" data="rules" class="btn left-panel-button btn-primary btn-lg">Rules</button>
+                    <button type="button" data="art" class="btn left-panel-button btn-primary btn-lg">Art</button>
+                </div>
+            </div>
+        </div>
+        <div class="col page-3">
+            <div class="row" style="padding-top: 12px;">
+                <div class="input-group mb-3">
+                    <input type="text" class="form-control" placeholder="Search for an item" aria-label="Recipient's username" aria-describedby="button-addon2">
+                    <button class="btn btn-outline-secondary" type="button" id="button-search">Search</button>
+                </div>
+            </div>
+            <div id="cards-container" class="row">
+                <div class="col-4">
+                    <div class="card select-card">
+                        <div class="card-body">
+                            <h5 class="card-title">Card title</h5>
+                            <div class="card-text">
+                                Some quick example text to build on the card title and make up the bulk of the card's content.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="" style="display:none;">
+    <div id="template-card" command="ph" card-key="ph" class="col-4">
+        <div class="card select-card">
+            <div class="card-body">
+                <h5 class="card-title">Card title</h5>
+                <div class="card-text">
+                    Some quick example text to build on the card title and make up the bulk of the card's content.
+                </div>
+            </div>
+        </div>
+    </div>
+    <button id="template-menu-item" type="button" data="ph" onclick="ph" class="btn left-panel-button btn-primary btn-lg">Spells</button>
+</div>
+
+<script>
+/*
+    ----Selectors:
+    --Location for Games
+    #selector-game>.row
+    #selector-category>.row
+
+    --Locations for cards
+    #cards-container
+        - Container for p3 cards
+
+    --Templates:
+    #template-menu-item
+        - Source for gutter menu buttons
+
+    #template-card
+        - Source for card items
+        
+    ----Ids:
+    #title-game-name
+    #title-name
+    #btn-nav-back
+*/
+
+// Helper Methods
+function bucketRequest(bucketName, fileRoute){
+  let blobUrl = JSON.parse( $.ajax({
+    type: "GET",
+    async: false,
+    dataType: "application/json",
+    url: 'https://storage.googleapis.com/storage/v1/b/'+bucketName+'/o/'+fileRoute
+  }).responseText).mediaLink;
+
+  let blobData = $.ajax({
+      type: "GET",
+      async: false,
+      dataType: "application/json",
+      url: blobUrl
+    }).responseText;
+  
+  return blobData;
+}
+
+function readDatabase(){
+    console.log('readDatabase');
+    return JSON.parse( bucketRequest('tf-overlays-db','data.json') );
+}
+
+async function postOverlaysCommand(command){
+    let commandObject = {
+        "id": createGuid(),
+        "command": command
+    }
+
+    let response = $.ajax({
+        type: "POST",
+        async: true,
+        dataType: "application/json",
+        url: "https://write-command-kwrdwjisqa-uc.a.run.app",
+        data: JSON.stringify(commandObject)
+    }).responseText;
+
+    return commandObject;
+}
+
+function createGuid(){
+   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+      var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+      return v.toString(16);
+   });
+}
+
+function properCase(str){
+    return str.substring(0,1).toUpperCase() + str.substring(1).toLowerCase();
+}
+
+// variables
+let pageStart = true;
+let currPage = 1;
+
+let dataObj = readDatabase();
+let activeGame = null;
+let activeCategory = null;
+let activeCategoryKey = '';
+
+// Initialize Page
+function updatePage(targetPage){
+    console.log('updatePage('+targetPage+')');
+    currPage = targetPage;
+
+    // set page title
+    // update visibility
+    // update controls
+    let pageTitle = 'TF Overlays';
+    if( currPage == 0 ){
+        activeGame = null;
+        activeCategory = null;
+        activeCategoryKey = '';
+
+        $('.page-1, .page-2, .page-3').show();
+    }
+    else if( currPage == 1 ){
+        activeGame = null;
+        activeCategory = null;
+        activeCategoryKey = '';
+        
+        pageTitle = 'Game';
+
+        launchPage1().then( function(){
+            $('.page-2, .page-3').hide();
+            $('.page-1').show();
+        });
+    }
+    else if( currPage == 2 ){
+        activeCategory = null;
+        activeCategoryKey = '';
+
+        pageTitle = 'Category';
+
+        launchPage2().then( function(){
+            $('.page-1, .page-3').hide();
+            $('.page-2').show();
+        });
+    }
+    else if( currPage == 3 ){
+        pageTitle = properCase( activeCategoryKey );
+        
+        launchPage3().then( function(){
+            $('.page-1, .page-2').hide();
+            $('.page-3').show();
+        });
+    }
+
+    // Set the Header title
+    $('#title-name').html(pageTitle);
+}
+
+async function launchPage1(){
+    $('#title-game-name').html('');
+
+    dataObj = readDatabase();
+
+    // Update Game Menu Items
+    $('#selector-game>.row').html('');
+    dataObj.games.forEach(game => {
+        let newId = createGuid();
+        $('#template-menu-item').clone()
+            .attr('Id',newId)
+            .attr('data',game.key)
+            .html(game.name)
+            .attr('onClick','buttonGameClick("'+game.key+'")')
+            .appendTo('#selector-game>.row');
+    });
+}
+
+async function launchPage2(){
+    // Check For Active Game
+    if( activeGame != '' ){
+        let categories = Object.keys(activeGame).filter( v => v != 'key' && v != 'name');
+        
+        // now linkup the category buttons to show their information
+        $('#selector-category>.row').html('');
+        categories.forEach(cat => {
+            let newId = createGuid();
+            $('#template-menu-item').clone()
+                .attr('Id',newId)
+                .attr('data',cat)
+                .html(properCase(cat))
+                .attr('onClick','buttonCategoryClick("'+cat+'")')
+                .appendTo('#selector-category>.row');
+        });
+    }
+    else{
+        buttonBackClick();
+    }
+}
+
+async function launchPage3(){
+    // Check for Active Game and Category
+    if( activeGame != null && activeCategory != null ){
+        let cards = activeCategory;
+        
+        //now linkup the category buttons to show their information
+        $('#cards-container').html('');
+        cards.forEach(card => {
+            let newId = createGuid();
+            // build command string, e.g. games.dnd5e/spells.fire_bolt
+            let command = 'games.'+activeGame.key+'/'+activeCategoryKey+'.'+card.key ;
+
+            let elem = $('#template-card').clone()
+                .attr('Id',newId)
+                .attr('card-key',card.key)
+                .attr('command','-gotta-build-command-string-')
+                .attr('onClick','cardClick("'+card.key+'", "'+command+'")')
+            
+            elem.find('.card-title').html(card.name);
+            elem.find('.card-text').html(card.description);
+                
+            elem.appendTo('#cards-container');
+        });
+    }
+    else{
+        buttonBackClick();
+    }
+}
+
+
+// Button Handlers
+// Back button
+function buttonBackClick(){
+    console.log('buttonBackClick()');
+    updatePage( currPage - 1 );
+}
+
+// Click Game Button
+function buttonGameClick(key){
+    console.log('buttonGameClick("'+key+'")');
+
+    activeGame = dataObj.games.filter( game => game.key = key )[0];
+    $('#title-game-name').html(activeGame.name);
+
+    updatePage(currPage+1);
+}
+
+// Click Category Button
+function buttonCategoryClick(key){
+    console.log('buttonCategoryClick("'+key+'")');
+    activeCategory = activeGame[key];
+    activeCategoryKey = key;
+    updatePage(3);
+}
+
+function cardClick(key, command){
+    postOverlaysCommand().then(function(value){
+        displayCommandConfirmation(value);
+    });
+}
+
+function displayCommandConfirmation(command){
+    console.log(JSON.stringify(command));
+}
+// End Button Handlers
+
+// Search
+
+// Generate Command value
+
+
+if(pageStart){
+    pageStart = false;
+    updatePage(currPage);
+}
+
+$(document).ready( function() {
+});
+</script>
+
+</body>
+<!--
+It might be better if you use a Markdown to HTML converter.
+I recommend ShowdownJS. Just add it to your project with
+<script src="https://cdnjs.cloudflare.com/ajax/libs/showdown/1.9.0/showdown.min.js"></script>
+-->
+</html>
