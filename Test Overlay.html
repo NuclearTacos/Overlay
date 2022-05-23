@@ -73,40 +73,40 @@ function bucketRequest(bucketName, fileRoute){
 
 // classes
 class OverlayElement {
-  get id(){
-    return this._id;
-  }
+    get id(){
+        return this._id;
+    }
 
-  get cardTemplate(){
-    return this._cardTemplate;
-  }
+    get cardTemplate(){
+        return this._cardTemplate;
+    }
 
-  showCeremony(){
-    const showCode = "{ let id = '"+this._id+"';"+this._showCeremony+" }";
-    setTimeout(showCode, 1);
-  }
+    showCeremony(){
+        const showCode = "{ let id = '"+this._id+"';"+this._showCeremony+" }";
+        setTimeout(showCode, 1);
+    }
 
-  hideCeremony(){
-    const hideCode = "{ let id = '"+this._id+"';"+this._removeCeremony+" }";
-    setTimeout(hideCode, 1);
-  }
+    hideCeremony(){
+        const hideCode = "{ let id = '"+this._id+"';"+this._removeCeremony+" }";
+        setTimeout(hideCode, 1);
+    }
 
-  updateTemplateId(){
-    this._cardTemplate = $(this._cardTemplate).attr('id',this._id).prop('outerHTML');
-  }
+    updateTemplateId(){
+        this._cardTemplate = $(this._cardTemplate).attr('id',this._id).prop('outerHTML');
+    }
 
-  constructor(jsonConfig) {
-    this._id = createGuid();
-    this._config = JSON.parse(jsonConfig);
-    
-    this._cardTemplate = this._config.cardTemplate;
-    this._showCeremony = this._config.showCeremony;
-    this._removeCeremony = this._config.removeCeremony;
+    constructor(jsonConfig) {
+        this._id = createGuid();
+        this._config = JSON.parse(jsonConfig);
+        
+        this._cardTemplate = this._config.cardTemplate;
+        this._showCeremony = this._config.showCeremony;
+        this._removeCeremony = this._config.removeCeremony;
 
-    this.updateTemplateId();
+        this.updateTemplateId();
 
-    $('.bucket').append(this._cardTemplate);
-  }
+        $('.bucket').append(this._cardTemplate);
+    }
 }
 // endclasses
 
@@ -143,7 +143,7 @@ function postOverlaysCommand(command){
 
 // todo: make this check against the Id of the last processed command.
 function readOverlaysCommand(){
-  return JSON.parse( bucketRequest('tf-overlays-db','active-command.json') ).command;
+  return bucketRequest('tf-overlays-db','active-command.json');
 }
 
 async function elementLifeCycle(){
@@ -175,21 +175,23 @@ function getElementsData(gameName){
 
 // command structure:
 // game.dnd5e/spells.fire_bolt
-function processCommand(command){
-  let data = JSON.parse(readDatabase());
-  let propArray = command.split('/');
+function processCommand(commandObj){
+    lastCommandId = commandObj.id;
 
-  let currentObj = data;
-  propArray.forEach(element => {
-    let commandPropertyKey = element.split('.')[0];
-    let commandPropertyValue = element.split('.')[1];
+    let data = JSON.parse(readDatabase());
+    let propArray = commandObj.command.split('/');
+
+    let currentObj = data;
+    propArray.forEach(element => {
+        let commandPropertyKey = element.split('.')[0];
+        let commandPropertyValue = element.split('.')[1];
+        
+        currentObj = currentObj[commandPropertyKey].filter( comm => comm.key == commandPropertyValue )[0];
+    });
     
-    currentObj = currentObj[commandPropertyKey].filter( comm => comm.key == commandPropertyValue )[0];
-  });
-  
-  if( ''+currentObj.cardTemplate != '' ){
-    return currentObj;
-  }
+    if( ''+currentObj.cardTemplate != '' ){
+        return currentObj;
+    }
 }
 
 function getElementTemplate(element){
@@ -218,48 +220,65 @@ function mergeSpellElement(spell,element){
   $('#'+element.id+' .ph-description').html(spell.description);
 }
 
-let activeCommand = ''
+let lastCommandId = '';
+
 
 $(document).ready( function() {
-  // let elementsData = getElementsData("dnd5e");
-  // let firebolt = elementsData.spells.filter( spell => spell.name == 'Fire Bolt')[0];
-  postOverlaysCommand('games.dnd5e/spells.fire_bolt');
-  let firebolt = processCommand(readOverlaysCommand());
-  
-  let elementTemplate = getElementTemplate(firebolt);
 
-  delay(1000).then( function(){
-    let newElement = new OverlayElement(elementTemplate);
-    mergeSpellElement(firebolt, newElement);
+    // read command on interval
+    setInterval(() => {
+        try{
+            console.log('reading');
+            let commandObj = JSON.parse( readOverlaysCommand() );
+            if( commandObj.id != lastCommandId ){
+                let element = processCommand(commandObj);
+                let elementTemplate = getElementTemplate(element);
+    
+                let newElement = new OverlayElement(elementTemplate);
+                mergeSpellElement(element, newElement);
+    
+                newElement.showCeremony();
+                delay(4000).then( function() {
+                    newElement.hideCeremony();
+                });
+            }
+        }catch{}
+    }, 1000);
 
-    newElement.showCeremony();
-    delay(4000).then( function() {
-      newElement.hideCeremony();
-    }).then( function(){
+    // postOverlaysCommand('games.dnd5e/spells.fire_bolt');
+    // let firebolt = processCommand(readOverlaysCommand());
 
-      // then try the next spell
-      // let magicMissile = elementsData.spells.filter( spell => spell.name == 'Magic Missile')[0];
-      postOverlaysCommand('games.dnd5e/spells.magic_missile');
-      let magicMissile = processCommand(readOverlaysCommand());
-  
-      let elementTemplate2 = getElementTemplate(magicMissile);
 
-      delay(1000).then( function(){
-        let newElement = new OverlayElement(elementTemplate2);
-        mergeSpellElement(magicMissile, newElement);
+    
+    // let elementTemplate = getElementTemplate(firebolt);
 
-        newElement.showCeremony();
-        delay(4000).then( function() {
-          newElement.hideCeremony();
-        });
-      });
-    });
-  });
+    // delay(1000).then( function(){
+    //   let newElement = new OverlayElement(elementTemplate);
+    //   mergeSpellElement(firebolt, newElement);
 
-  // read command on interval
-  // setInterval(() => {
-  //   console.log( readOverlaysCommand() );
-  // }, 1000);
+    //   newElement.showCeremony();
+    //   delay(4000).then( function() {
+    //     newElement.hideCeremony();
+    //   }).then( function(){
+
+    //     // then try the next spell
+    //     // let magicMissile = elementsData.spells.filter( spell => spell.name == 'Magic Missile')[0];
+    //     postOverlaysCommand('games.dnd5e/spells.magic_missile');
+    //     let magicMissile = processCommand(readOverlaysCommand());
+    
+    //     let elementTemplate2 = getElementTemplate(magicMissile);
+
+    //     delay(1000).then( function(){
+    //       let newElement = new OverlayElement(elementTemplate2);
+    //       mergeSpellElement(magicMissile, newElement);
+
+    //       newElement.showCeremony();
+    //       delay(4000).then( function() {
+    //         newElement.hideCeremony();
+    //       });
+    //     });
+    //   });
+    // });
 });
 
 </script>
