@@ -324,7 +324,7 @@ function buttonCategoryClick(key){
 }
 
 function cardClick(key, command){
-    postOverlaysCommand().then(function(value){
+    postOverlaysCommand(command).then(function(value){
         displayCommandConfirmation(value);
     });
 }
