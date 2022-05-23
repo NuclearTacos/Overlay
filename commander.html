@@ -32,7 +32,7 @@
         <h1 id="title-name" class="text-center">PageName</h1>
     </div>
     <div class="p-2 w-25 align-self-center page-2 page-3" style="height:fit-content;">
-        <h4 id="title-game-name" class="text-center">dnd5e</h4>
+        <h4 id="title-game-name" class="text-center" style="margin:0;"></h4>
     </div>
 </div>
 <hr style="margin:0px">
@@ -78,7 +78,7 @@
 </div>
 
 <div class="" style="display:none;">
-    <div id="template-spell" command="ph" class="col-4">
+    <div id="template-card" command="ph" card-key="ph" class="col-4">
         <div class="card select-card">
             <div class="card-body">
                 <h5 class="card-title">Card title</h5>
@@ -106,8 +106,8 @@
     #template-menu-item
         - Source for gutter menu buttons
 
-    #template-spell
-        - Source for spell items
+    #template-card
+        - Source for card items
         
     ----Ids:
     #title-game-name
@@ -139,19 +139,42 @@ function readDatabase(){
     return JSON.parse( bucketRequest('tf-overlays-db','data.json') );
 }
 
-function createGuid() {
+async function postOverlaysCommand(command){
+    let commandObject = {
+        "id": createGuid(),
+        "command": command
+    }
+
+    let response = $.ajax({
+        type: "POST",
+        async: true,
+        dataType: "application/json",
+        url: "https://write-command-kwrdwjisqa-uc.a.run.app",
+        data: JSON.stringify(commandObject)
+    }).responseText;
+
+    return commandObject;
+}
+
+function createGuid(){
    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
       var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
       return v.toString(16);
    });
 }
 
+function properCase(str){
+    return str.substring(0,1).toUpperCase() + str.substring(1).toLowerCase();
+}
+
 // variables
-let currPage = 0;
-let activeCategory = '';
+let pageStart = true;
+let currPage = 1;
 
 let dataObj = readDatabase();
 let activeGame = null;
+let activeCategory = null;
+let activeCategoryKey = '';
 
 // Initialize Page
 function updatePage(targetPage){
@@ -164,24 +187,37 @@ function updatePage(targetPage){
     let pageTitle = 'TF Overlays';
     if( currPage == 0 ){
         activeGame = null;
+        activeCategory = null;
+        activeCategoryKey = '';
+
         $('.page-1, .page-2, .page-3').show();
     }
     else if( currPage == 1 ){
+        activeGame = null;
+        activeCategory = null;
+        activeCategoryKey = '';
+        
         pageTitle = 'Game';
+
         launchPage1().then( function(){
             $('.page-2, .page-3').hide();
             $('.page-1').show();
         });
     }
     else if( currPage == 2 ){
+        activeCategory = null;
+        activeCategoryKey = '';
+
         pageTitle = 'Category';
+
         launchPage2().then( function(){
             $('.page-1, .page-3').hide();
             $('.page-2').show();
         });
     }
     else if( currPage == 3 ){
-        pageTitle = activeCategory;
+        pageTitle = properCase( activeCategoryKey );
+        
         launchPage3().then( function(){
             $('.page-1, .page-2').hide();
             $('.page-3').show();
@@ -193,8 +229,7 @@ function updatePage(targetPage){
 }
 
 async function launchPage1(){
-    activeGame = null;
-    activeCategory = '';
+    $('#title-game-name').html('');
 
     dataObj = readDatabase();
 
@@ -212,11 +247,54 @@ async function launchPage1(){
 }
 
 async function launchPage2(){
-    activeCategory = '';
+    // Check For Active Game
+    if( activeGame != '' ){
+        let categories = Object.keys(activeGame).filter( v => v != 'key' && v != 'name');
+        
+        // now linkup the category buttons to show their information
+        $('#selector-category>.row').html('');
+        categories.forEach(cat => {
+            let newId = createGuid();
+            $('#template-menu-item').clone()
+                .attr('Id',newId)
+                .attr('data',cat)
+                .html(properCase(cat))
+                .attr('onClick','buttonCategoryClick("'+cat+'")')
+                .appendTo('#selector-category>.row');
+        });
+    }
+    else{
+        buttonBackClick();
+    }
 }
 
 async function launchPage3(){
+    // Check for Active Game and Category
+    if( activeGame != null && activeCategory != null ){
+        let cards = activeCategory;
+        
+        //now linkup the category buttons to show their information
+        $('#cards-container').html('');
+        cards.forEach(card => {
+            let newId = createGuid();
+            // build command string, e.g. games.dnd5e/spells.fire_bolt
+            let command = 'games.'+activeGame.key+'/'+activeCategoryKey+'.'+card.key ;
 
+            let elem = $('#template-card').clone()
+                .attr('Id',newId)
+                .attr('card-key',card.key)
+                .attr('command','-gotta-build-command-string-')
+                .attr('onClick','cardClick("'+card.key+'", "'+command+'")')
+            
+            elem.find('.card-title').html(card.name);
+            elem.find('.card-text').html(card.description);
+                
+            elem.appendTo('#cards-container');
+        });
+    }
+    else{
+        buttonBackClick();
+    }
 }
 
 
@@ -229,22 +307,44 @@ function buttonBackClick(){
 
 // Click Game Button
 function buttonGameClick(key){
-    console.log('buttongGameClick("'+key+'")');
+    console.log('buttonGameClick("'+key+'")');
+
     activeGame = dataObj.games.filter( game => game.key = key )[0];
+    $('#title-game-name').html(activeGame.name);
+
     updatePage(currPage+1);
 }
-// End Button Handlers
 
-// Click spell / push command
+// Click Category Button
+function buttonCategoryClick(key){
+    console.log('buttonCategoryClick("'+key+'")');
+    activeCategory = activeGame[key];
+    activeCategoryKey = key;
+    updatePage(3);
+}
+
+function cardClick(key, command){
+    postOverlaysCommand().then(function(value){
+        displayCommandConfirmation(value);
+    });
+}
+
+function displayCommandConfirmation(command){
+    console.log(JSON.stringify(command));
+}
+// End Button Handlers
 
 // Search
 
 // Generate Command value
 
 
+if(pageStart){
+    pageStart = false;
+    updatePage(currPage);
+}
 
 $(document).ready( function() {
-    
 });
 </script>
 
