@@ -2,6 +2,7 @@
     "games":[
         {
             "key": "dnd5e",
+            "name": "D&D 5e",
             "spells": [
                 {
                     "key": "fire_bolt",
