@@ -7,15 +7,15 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 
 
-  
+
 <style>
-.overlay-container {  
+.overlay-container {
   align-items: center;
   justify-content: center;
   margin: auto;
   width: fit-content;
 }
-  
+
 #container {
   width: 400px;
   height: 400px;
@@ -66,7 +66,7 @@ function bucketRequest(bucketName, fileRoute){
       dataType: "application/json",
       url: blobUrl
     }).responseText;
-  
+
   return blobData;
 }
 // end Helper Methods
@@ -104,7 +104,7 @@ class OverlayElement {
     constructor(jsonConfig) {
         this._id = createGuid();
         this._config = JSON.parse(jsonConfig);
-        
+
         this._cardTemplate = this._config.cardTemplate;
         this._displayDuration = this._config.displayDuration;
         this._showCeremony = this._config.showCeremony;
@@ -153,30 +153,30 @@ function readOverlaysCommand(){
   return bucketRequest('tf-overlays-db','active-command.json');
 }
 
-async function elementLifeCycle(){
-  let data = '{ "exCount": 0 }';
-  let cardData = $.ajax({
-    type: "POST",
-    async: false,
-    dataType: "application/json",
-    url: "https://read-environment-var-kwrdwjisqa-uc.a.run.app",
-    data: data
-  }).responseText;
+// async function elementLifeCycle(){
+//   let data = '{ "exCount": 0 }';
+//   let cardData = $.ajax({
+//     type: "POST",
+//     async: false,
+//     dataType: "application/json",
+//     url: "https://read-environment-var-kwrdwjisqa-uc.a.run.app",
+//     data: data
+//   }).responseText;
 
-  {
-    await delay(1000);
-    let newElement = new OverlayElement(cardData);
-    newElement.showCeremony();
-    await delay(3000);
-    newElement.hideCeremony();
-  }
-}
+//   {
+//     await delay(1000);
+//     let newElement = new OverlayElement(cardData);
+//     newElement.showCeremony();
+//     await delay(3000);
+//     newElement.hideCeremony();
+//   }
+// }
 // endcloudcommands
 
 function getElementsData(gameName){
   let demoData = bucketRequest('tf-overlays-db','data.json');
   let responseObj = JSON.parse(demoData);
-  
+
   return responseObj.games.filter( game => game.key == gameName )[0].data;
 }
 
@@ -192,10 +192,10 @@ function processCommand(commandObj){
     propArray.forEach(element => {
         let commandPropertyKey = element.split('.')[0];
         let commandPropertyValue = element.split('.')[1];
-        
+
         currentObj = currentObj[commandPropertyKey].filter( comm => comm.key == commandPropertyValue )[0];
     });
-    
+
     if( ''+currentObj.cardTemplate != '' ){
         return currentObj;
     }
@@ -242,19 +242,20 @@ async function executeCommand(commandObj){
     let newElement = new OverlayElement(elementTemplate);
     mergeSpellElement(element, newElement);
 
-    
+
     newElement.showCeremony();
-        
+
     if( newElement.displayDuration != ''){
         // When a duration is set, display for the
         // duration before executing hideCeremony().
         let delayDur = newElement.displayDuration * 1000;
         delay(delayDur).then( () =>{
             newElement.hideCeremony();
-            
+
             // The element was shown, and the delay has passed
             // Now, we set the clear method
             elemClearMethod = ( async() => {
+
                 animationLocked = false;
                 elemClearMethod = ( async() => {return null;} ); // reset this method once it has been consumed.
                 return;
@@ -262,12 +263,17 @@ async function executeCommand(commandObj){
         });
     }
     else{
-        // When a duration isn't set, we need to unlock animations and set a clear method so 
+        // When a duration isn't set, we need to unlock animations and set a clear method so
         elemClearMethod = ( async() => {
-            await newElement.hideCeremony();
-            
-            animationLocked = false;
-            elemClearMethod = ( async() => {return null;} ); // reset this method once it has been consumed.
+            // $(something).fadeOut() isn't _quite async_
+            // async, so this doesn't quite work all the time....
+            // Bummer
+
+            await newElement.hideCeremony().then( () => {
+                elemClearMethod = ( async() => {return null;} ); // reset this method once it has been consumed.
+                animationLocked = false;
+            });
+
             return;
         });
     }
@@ -275,29 +281,34 @@ async function executeCommand(commandObj){
     return newElement;
 }
 
-async function waitForUnlock(){
-    while( animationLocked == true ){
-        await delay(500);
-    }
-}
+// async function waitForUnlock(){
+//     while( animationLocked == true ){
+//         await delay(500);
+//     }
+// }
 
 
 let elemClearMethod = ( async() => {return null;} );
 
 let animationLocked = false;
+let queueLocked = false;
+
+
 
 $(document).ready( function() {
 
     setInterval(() => {
         try{
             let commandObj = JSON.parse( readOverlaysCommand() );
-            if( commandObj.id != lastCommandId ){
+            if( commandObj.id != lastCommandId && queueLocked == false ){
+                queueLocked = true;
                 enqueue( commandObj );
 
                 // Calling this will make sure that, if the animation
                 // has been completed, the active/persistent
                 // element will be dismissed and then the lock will be cleared.
                 elemClearMethod();
+                queueLocked = false;
             }
 
 
@@ -311,7 +322,7 @@ $(document).ready( function() {
                 });
             }
         }catch{}
-    }, 1000);
+    }, 500);
 });
 
 </script>
