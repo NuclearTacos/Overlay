@@ -195,20 +195,6 @@ function processCommand(commandObj){
 }
 
 function getElementTemplate(element){
-  // var cardUrl = JSON.parse( $.ajax({
-  //   type: "GET",
-  //   async: false,
-  //   dataType: "application/json",
-  //   url: 'https://storage.googleapis.com/storage/v1/b/'+element.bucket+'/o/'+element.object
-  // }).responseText).mediaLink;
-
-  // let elemTemplate = $.ajax({
-  //     type: "GET",
-  //     async: false,
-  //     dataType: "application/json",
-  //     url: cardUrl
-  //   }).responseText;
-  
   elemTemplate = bucketRequest(element.bucket, element.object);
 
   return elemTemplate;
@@ -222,63 +208,67 @@ function mergeSpellElement(spell,element){
 
 let lastCommandId = '';
 
+let commandQueue = [];
+
+function enqueue(commandObj){
+    commandQueue.push(commandObj);
+    lastCommandId = commandObj.id;
+}
+
+function dequeue(){
+    // dequeue will only be called once the array is not empty
+    if( commandQueue != '' ){
+        return commandQueue.splice(0,1)[0];
+    }
+    else{
+        console.log("HEY!  dequeue() was called, and there were no items in the commandQueue");
+        return null;
+    }
+}
+
+async function executeCommand(commandObj){
+    let element = processCommand(commandObj);
+    let elementTemplate = getElementTemplate(element);
+
+    let newElement = new OverlayElement(elementTemplate);
+    mergeSpellElement(element, newElement);
+
+    activeElement = newElement;
+
+    newElement.showCeremony();
+    await delay(4000);
+    await newElement.hideCeremony();
+
+    // return activeElement
+}
+
+async function waitForUnlock(){
+    while( animationLocked == true ){
+        await delay(500);
+    }
+}
+
+let activeElement = null;
+
+let animationLocked   = false;
 
 $(document).ready( function() {
 
-    // read command on interval
     setInterval(() => {
         try{
-            console.log('reading');
             let commandObj = JSON.parse( readOverlaysCommand() );
             if( commandObj.id != lastCommandId ){
-                let element = processCommand(commandObj);
-                let elementTemplate = getElementTemplate(element);
-    
-                let newElement = new OverlayElement(elementTemplate);
-                mergeSpellElement(element, newElement);
-    
-                newElement.showCeremony();
-                delay(4000).then( function() {
-                    newElement.hideCeremony();
+                enqueue( commandObj );
+            }
+
+            if( commandQueue != '' && animationLocked == false ){
+                animationLocked = true;
+                executeCommand(dequeue()).then( () => {
+                    animationLocked = false;
                 });
             }
         }catch{}
     }, 1000);
-
-    // postOverlaysCommand('games.dnd5e/spells.fire_bolt');
-    // let firebolt = processCommand(readOverlaysCommand());
-
-
-    
-    // let elementTemplate = getElementTemplate(firebolt);
-
-    // delay(1000).then( function(){
-    //   let newElement = new OverlayElement(elementTemplate);
-    //   mergeSpellElement(firebolt, newElement);
-
-    //   newElement.showCeremony();
-    //   delay(4000).then( function() {
-    //     newElement.hideCeremony();
-    //   }).then( function(){
-
-    //     // then try the next spell
-    //     // let magicMissile = elementsData.spells.filter( spell => spell.name == 'Magic Missile')[0];
-    //     postOverlaysCommand('games.dnd5e/spells.magic_missile');
-    //     let magicMissile = processCommand(readOverlaysCommand());
-    
-    //     let elementTemplate2 = getElementTemplate(magicMissile);
-
-    //     delay(1000).then( function(){
-    //       let newElement = new OverlayElement(elementTemplate2);
-    //       mergeSpellElement(magicMissile, newElement);
-
-    //       newElement.showCeremony();
-    //       delay(4000).then( function() {
-    //         newElement.hideCeremony();
-    //       });
-    //     });
-    //   });
-    // });
 });
 
 </script>
