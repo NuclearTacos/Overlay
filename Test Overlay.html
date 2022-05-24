@@ -81,14 +81,20 @@ class OverlayElement {
         return this._cardTemplate;
     }
 
-    showCeremony(){
-        const showCode = "{ let id = '"+this._id+"';"+this._showCeremony+" }";
-        setTimeout(showCode, 1);
+    get displayDuration(){
+        return this._displayDuration;
     }
 
-    hideCeremony(){
+    async showCeremony(){
+        const showCode = "{ let id = '"+this._id+"';"+this._showCeremony+" }";
+        await setTimeout(showCode, 1);
+        return;
+    }
+
+    async hideCeremony(){
         const hideCode = "{ let id = '"+this._id+"';"+this._removeCeremony+" }";
-        setTimeout(hideCode, 1);
+        await setTimeout(hideCode, 1);
+        return;
     }
 
     updateTemplateId(){
@@ -100,6 +106,7 @@ class OverlayElement {
         this._config = JSON.parse(jsonConfig);
         
         this._cardTemplate = this._config.cardTemplate;
+        this._displayDuration = this._config.displayDuration;
         this._showCeremony = this._config.showCeremony;
         this._removeCeremony = this._config.removeCeremony;
 
@@ -227,19 +234,45 @@ function dequeue(){
 }
 
 async function executeCommand(commandObj){
+    animationLocked = true;
+
     let element = processCommand(commandObj);
     let elementTemplate = getElementTemplate(element);
 
     let newElement = new OverlayElement(elementTemplate);
     mergeSpellElement(element, newElement);
 
-    activeElement = newElement;
-
+    
     newElement.showCeremony();
-    await delay(4000);
-    await newElement.hideCeremony();
+        
+    if( newElement.displayDuration != ''){
+        // When a duration is set, display for the
+        // duration before executing hideCeremony().
+        let delayDur = newElement.displayDuration * 1000;
+        delay(delayDur).then( () =>{
+            newElement.hideCeremony();
+            
+            // The element was shown, and the delay has passed
+            // Now, we set the clear method
+            elemClearMethod = ( async() => {
+                animationLocked = false;
+                elemClearMethod = ( async() => {return null;} ); // reset this method once it has been consumed.
+                return;
+            });
+        });
+    }
+    else{
+        // When a duration isn't set, we need to unlock animations and set a clear method so 
+        elemClearMethod = ( async() => {
+            await newElement.hideCeremony();
+            
+            animationLocked = false;
+            elemClearMethod = ( async() => {return null;} ); // reset this method once it has been consumed.
+            return;
+        });
+    }
 
-    // return activeElement
+    return newElement;
 }
 
 async function waitForUnlock(){
@@ -248,9 +281,10 @@ async function waitForUnlock(){
     }
 }
 
-let activeElement = null;
 
-let animationLocked   = false;
+let elemClearMethod = ( async() => {return null;} );
+
+let animationLocked = false;
 
 $(document).ready( function() {
 
@@ -259,12 +293,21 @@ $(document).ready( function() {
             let commandObj = JSON.parse( readOverlaysCommand() );
             if( commandObj.id != lastCommandId ){
                 enqueue( commandObj );
+
+                // Calling this will make sure that, if the animation
+                // has been completed, the active/persistent
+                // element will be dismissed and then the lock will be cleared.
+                elemClearMethod();
             }
 
+
             if( commandQueue != '' && animationLocked == false ){
-                animationLocked = true;
-                executeCommand(dequeue()).then( () => {
-                    animationLocked = false;
+                executeCommand(dequeue()).then( (newElement) => {
+                    // This method will be defined in cases where the delay is finite.
+                    // Running it immediately will allow the animation lock to be safely removed.
+                    if( newElement.displayDuration != '' ){
+                        elemClearMethod();
+                    }
                 });
             }
         }catch{}

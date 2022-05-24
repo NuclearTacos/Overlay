@@ -1,5 +1,6 @@
 {
     "cardTemplate": "<div class=\"overlay-container\" style=\"display: none;\"> \r\n <div class=\"card border-dark mb-3\" style=\"max-width: 18rem;\">\r\n <div class=\"card-header ph-level\">Header<\/div>\r\n <div class=\"card-body text-dark\">\r\n <h5 class=\"card-title ph-name\">Dark card title<\/h5>\r\n <p class=\"card-text ph-description\">Some quick example text to build on the card title and make up the bulk of the card's content.<\/p>\r\n <\/div>\r\n <\/div>\r\n<\/div>",
+    "displayDuration": "",
     "showCeremony": "$('#'+id).fadeIn();",
     "removeCeremony": "$('#'+id).fadeOut( function() {$('#'+id).remove();} );"
 }
