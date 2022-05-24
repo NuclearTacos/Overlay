@@ -81,14 +81,20 @@ class OverlayElement {
         return this._cardTemplate;
     }
 
-    showCeremony(){
-        const showCode = "{ let id = '"+this._id+"';"+this._showCeremony+" }";
-        setTimeout(showCode, 1);
+    get displayDuration(){
+        return this._displayDuration;
     }
 
-    hideCeremony(){
+    async showCeremony(){
+        const showCode = "{ let id = '"+this._id+"';"+this._showCeremony+" }";
+        await setTimeout(showCode, 1);
+        return;
+    }
+
+    async hideCeremony(){
         const hideCode = "{ let id = '"+this._id+"';"+this._removeCeremony+" }";
-        setTimeout(hideCode, 1);
+        await setTimeout(hideCode, 1);
+        return;
     }
 
     updateTemplateId(){
@@ -100,6 +106,7 @@ class OverlayElement {
         this._config = JSON.parse(jsonConfig);
         
         this._cardTemplate = this._config.cardTemplate;
+        this._displayDuration = this._config.displayDuration;
         this._showCeremony = this._config.showCeremony;
         this._removeCeremony = this._config.removeCeremony;
 
@@ -195,20 +202,6 @@ function processCommand(commandObj){
 }
 
 function getElementTemplate(element){
-  // var cardUrl = JSON.parse( $.ajax({
-  //   type: "GET",
-  //   async: false,
-  //   dataType: "application/json",
-  //   url: 'https://storage.googleapis.com/storage/v1/b/'+element.bucket+'/o/'+element.object
-  // }).responseText).mediaLink;
-
-  // let elemTemplate = $.ajax({
-  //     type: "GET",
-  //     async: false,
-  //     dataType: "application/json",
-  //     url: cardUrl
-  //   }).responseText;
-  
   elemTemplate = bucketRequest(element.bucket, element.object);
 
   return elemTemplate;
@@ -222,63 +215,103 @@ function mergeSpellElement(spell,element){
 
 let lastCommandId = '';
 
+let commandQueue = [];
+
+function enqueue(commandObj){
+    commandQueue.push(commandObj);
+    lastCommandId = commandObj.id;
+}
+
+function dequeue(){
+    // dequeue will only be called once the array is not empty
+    if( commandQueue != '' ){
+        return commandQueue.splice(0,1)[0];
+    }
+    else{
+        console.log("HEY!  dequeue() was called, and there were no items in the commandQueue");
+        return null;
+    }
+}
+
+async function executeCommand(commandObj){
+    animationLocked = true;
+
+    let element = processCommand(commandObj);
+    let elementTemplate = getElementTemplate(element);
+
+    let newElement = new OverlayElement(elementTemplate);
+    mergeSpellElement(element, newElement);
+
+    
+    newElement.showCeremony();
+        
+    if( newElement.displayDuration != ''){
+        // When a duration is set, display for the
+        // duration before executing hideCeremony().
+        let delayDur = newElement.displayDuration * 1000;
+        delay(delayDur).then( () =>{
+            newElement.hideCeremony();
+            
+            // The element was shown, and the delay has passed
+            // Now, we set the clear method
+            elemClearMethod = ( async() => {
+                animationLocked = false;
+                elemClearMethod = ( async() => {return null;} ); // reset this method once it has been consumed.
+                return;
+            });
+        });
+    }
+    else{
+        // When a duration isn't set, we need to unlock animations and set a clear method so 
+        elemClearMethod = ( async() => {
+            await newElement.hideCeremony();
+            
+            animationLocked = false;
+            elemClearMethod = ( async() => {return null;} ); // reset this method once it has been consumed.
+            return;
+        });
+    }
+
+    return newElement;
+}
+
+async function waitForUnlock(){
+    while( animationLocked == true ){
+        await delay(500);
+    }
+}
+
+
+let elemClearMethod = ( async() => {return null;} );
+
+let animationLocked = false;
 
 $(document).ready( function() {
 
-    // read command on interval
     setInterval(() => {
         try{
-            console.log('reading');
             let commandObj = JSON.parse( readOverlaysCommand() );
             if( commandObj.id != lastCommandId ){
-                let element = processCommand(commandObj);
-                let elementTemplate = getElementTemplate(element);
-    
-                let newElement = new OverlayElement(elementTemplate);
-                mergeSpellElement(element, newElement);
-    
-                newElement.showCeremony();
-                delay(4000).then( function() {
-                    newElement.hideCeremony();
+                enqueue( commandObj );
+
+                // Calling this will make sure that, if the animation
+                // has been completed, the active/persistent
+                // element will be dismissed and then the lock will be cleared.
+                elemClearMethod();
+            }
+
+
+            if( commandQueue != '' && animationLocked == false ){
+                executeCommand(dequeue()).then( (newElement) => {
+                    // This method will be defined in cases where the delay is finite.
+                    // Running it immediately will allow the animation lock to be safely removed.
+                    if( newElement.displayDuration != '' ){
+                        elemClearMethod();
+                    }
                 });
             }
         }catch{}
     }, 1000);
-
-    // postOverlaysCommand('games.dnd5e/spells.fire_bolt');
-    // let firebolt = processCommand(readOverlaysCommand());
-
-
-    
-    // let elementTemplate = getElementTemplate(firebolt);
-
-    // delay(1000).then( function(){
-    //   let newElement = new OverlayElement(elementTemplate);
-    //   mergeSpellElement(firebolt, newElement);
-
-    //   newElement.showCeremony();
-    //   delay(4000).then( function() {
-    //     newElement.hideCeremony();
-    //   }).then( function(){
-
-    //     // then try the next spell
-    //     // let magicMissile = elementsData.spells.filter( spell => spell.name == 'Magic Missile')[0];
-    //     postOverlaysCommand('games.dnd5e/spells.magic_missile');
-    //     let magicMissile = processCommand(readOverlaysCommand());
-    
-    //     let elementTemplate2 = getElementTemplate(magicMissile);
-
-    //     delay(1000).then( function(){
-    //       let newElement = new OverlayElement(elementTemplate2);
-    //       mergeSpellElement(magicMissile, newElement);
-
-    //       newElement.showCeremony();
-    //       delay(4000).then( function() {
-    //         newElement.hideCeremony();
-    //       });
-    //     });
-    //   });
-    // });
 });
 
 </script>
