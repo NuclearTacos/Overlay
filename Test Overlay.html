@@ -213,6 +213,24 @@ function mergeSpellElement(spell,element){
   $('#'+element.id+' .ph-description').html(spell.description);
 }
 
+function mergeP2eActions(action, element){
+  $('#'+element.id+' .ph-icon').attr('src',action.icon);
+  $('#'+element.id+' .ph-name').html(action.name);
+  if( action.trigger != null ){
+    $('#'+element.id+' .ph-trigger').html(action.trigger);
+  }
+  else{
+    $('#'+element.id+' .ph-trigger').parentsUntil('.card-text').hide();
+  }
+  if( action.requirements != null ){
+    $('#'+element.id+' .ph-requirements').html(action.requirements);
+  }
+  else{
+    $('#'+element.id+' .ph-requirements').parentsUntil('.card-text').hide();
+  }
+  $('#'+element.id+' .ph-description').html(action.description);
+}
+
 let lastCommandId = '';
 
 let commandQueue = [];
@@ -240,7 +258,13 @@ async function executeCommand(commandObj){
     let elementTemplate = getElementTemplate(element);
 
     let newElement = new OverlayElement(elementTemplate);
-    mergeSpellElement(element, newElement);
+    
+    if( commandObj.command.includes('games.dnd5e/spells') ){
+      mergeSpellElement(element, newElement);
+    }
+    else if( commandObj.command.includes('games.p2e/actions') ){
+      mergeP2eActions(element, newElement);
+    }
 
 
     newElement.showCeremony();
@@ -330,6 +354,30 @@ $(document).ready( function() {
 });
 
 </script>
+
+<div class="overlay-container" style="display: none;"> 
+  <div class="card border-dark mb-3" style="max-width: 18rem;">
+    <div class="card-body text-dark" style="padding: 8px 16px;">
+      <div class="d-flex align-items-center" style="margin-bottom: 8px;">
+        <img class="ph-icon" src="https://storage.googleapis.com/tf-overlays-db/p2e/icons/action-1.png" style="height: 1.5rem; margin: 2px;">
+        <h5 class="card-title ph-name" style="margin: 0; height: fit-content">Action Name</h5>
+      </div>
+      <p class="card-text" style="margin-bottom: 2px;">
+        <small>
+          <b>Trigger:</b> <span class="ph-trigger">example text to build on the card title and make up the bulk of the card's content.</span>
+        </small>
+      </p>
+      <p class="card-text" style="margin-bottom: 2px">
+        <small>
+          <b>Requirement:</b> <span class="ph-requirement">example text to build on the card title and make up the bulk of the card's content.</span>
+        </small>
+      </p>
+      <hr style="margin: 2px 0 6px 0;">
+      <p class="card-text ph-description">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+    </div>
+  </div>
+</div>
+  
 
 </body>
 <!--
