@@ -309,7 +309,7 @@ function buttonBackClick(){
 function buttonGameClick(key){
     console.log('buttonGameClick("'+key+'")');
 
-    activeGame = dataObj.games.filter( game => game.key = key )[0];
+    activeGame = dataObj.games.filter( game => game.key == key )[0];
     $('#title-game-name').html(activeGame.name);
 
     updatePage(currPage+1);
