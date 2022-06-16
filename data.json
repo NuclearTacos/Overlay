@@ -41,6 +41,225 @@
             "art": [
 
             ]
+        },
+        {
+            "key": "p2e",
+            "name": "Pathfinder 2e",
+            "actions": [
+                {
+                    "key": "aid",
+                    "name": "Aid",
+                    "action_type": "reaction",
+                    "traits": null,
+                    "icon": "https://storage.googleapis.com/tf-overlays-db/p2e/icons/action-reaction.png",
+                    "bucket": "tf-overlays-db",
+                    "object": "p2e-actions.json",
+                    "trigger":"An ally is about to use an action that requires a skill check or attack roll",
+                    "requirements": null,
+                    "description": "<p>On your turn, use an <b>action</b> to prepare.  Then, use your <b>reaction</b> to improve an ally's roll.  <b>Critical Fails</b> can make the check worse.</p>"
+                },
+                {
+                    "key": "crawl",
+                    "name": "Crawl",
+                    "action_type": "action",
+                    "traits": "move",
+                    "icon": "https://storage.googleapis.com/tf-overlays-db/p2e/icons/action-1.png",
+                    "bucket": "tf-overlays-db",
+                    "object": "p2e-actions.json",
+                    "trigger": null,
+                    "requirements": "You are prone and your speed is at least 10 feet.",
+                    "description": "You move 5 feet by crawling and continue to stay prone</p>"
+                },
+                {
+                    "key": "delay",
+                    "name": "Delay",
+                    "action_type": "free_action",
+                    "traits": null,
+                    "icon": "https://storage.googleapis.com/tf-overlays-db/p2e/icons/action-free.png",
+                    "bucket": "tf-overlays-db",
+                    "object": "p2e-actions.json",
+                    "trigger":"Your turn begins",
+                    "requirements": null,
+                    "description": "<p>Before acting, you can choose to delay your turn until after the turn of any other creature, altering the initiative order.  Useful to make sure your turn happens when most effective.</p>"
+                },
+                {
+                    "key": "drop_prone",
+                    "name": "Drop Prone",
+                    "action_type": "action",
+                    "traits": "move",
+                    "icon": "https://storage.googleapis.com/tf-overlays-db/p2e/icons/action-1.png",
+                    "bucket": "tf-overlays-db",
+                    "object": "p2e-actions.json",
+                    "trigger": null,
+                    "requirements": null,
+                    "description": "<p>You fall prone.</p>"
+                },
+                {
+                    "key": "escape",
+                    "name": "Escape",
+                    "action_type": "action",
+                    "traits": "attack",
+                    "icon": "https://storage.googleapis.com/tf-overlays-db/p2e/icons/action-1.png",
+                    "bucket": "tf-overlays-db",
+                    "object": "p2e-actions.json",
+                    "trigger": null,
+                    "requirements": null,
+                    "description": "<p>Choose one effect that is grabbing, immobilizing, or restraining you and make an unarmed strike, or <b>Athletics</b>/<b>Acrobatics</b> check, against the effect's DC.  <b>Critical Failures</b> prevent you from trying to <b>Escape</b> again until next turn.</p>"
+                },
+                {
+                    "key": "interact",
+                    "name": "Interact",
+                    "action_type": "action",
+                    "traits": "manipulate",
+                    "icon": "https://storage.googleapis.com/tf-overlays-db/p2e/icons/action-1.png",
+                    "bucket": "tf-overlays-db",
+                    "object": "p2e-actions.json",
+                    "trigger": null,
+                    "requirements": null,
+                    "description": "<p>Grab unattended objects or interact with objects around you.  You can also grab stored objects.</p>"
+                },
+                {
+                    "key": "leap",
+                    "name": "Leap",
+                    "action_type": "action",
+                    "traits": "move",
+                    "icon": "https://storage.googleapis.com/tf-overlays-db/p2e/icons/action-1.png",
+                    "bucket": "tf-overlays-db",
+                    "object": "p2e-actions.json",
+                    "trigger": null,
+                    "requirements": null,
+                    "description": "<p>Make a short jump that can cross a 5ft or 10ft gap if you have 15ft or 30ft of speed.  Otherwise, you can leap vertically 3 feet higher.  Longer jumps require using <b>Athletics</b>.</p>"
+                },
+                {
+                    "key": "ready",
+                    "name": "Ready",
+                    "action_type": "action",
+                    "traits": "concentrate",
+                    "icon": "https://storage.googleapis.com/tf-overlays-db/p2e/icons/action-2.png",
+                    "bucket": "tf-overlays-db",
+                    "object": "p2e-actions.json",
+                    "trigger": null,
+                    "requirements": null,
+                    "description": "<p>Forego actions this turn to prepare a SINGLE action to be used once a declared \"trigger\" occurs.  Your Reaction is used to release your readied action.</p>"
+                },
+                {
+                    "key": "release",
+                    "name": "Release",
+                    "action_type": "free_action",
+                    "traits": "manipulate",
+                    "icon": "https://storage.googleapis.com/tf-overlays-db/p2e/icons/action-free.png",
+                    "bucket": "tf-overlays-db",
+                    "object": "p2e-actions.json",
+                    "trigger": null,
+                    "requirements": null,
+                    "description": "<p>Drop something that you're holding.  This does not trigger reactions like <b>Attack of Opportunity</b></p>"
+                },
+                {
+                    "key": "seek",
+                    "name": "Seek",
+                    "action_type": "action",
+                    "traits": "concentrate,secret",
+                    "icon": "https://storage.googleapis.com/tf-overlays-db/p2e/icons/action-1.png",
+                    "bucket": "tf-overlays-db",
+                    "object": "p2e-actions.json",
+                    "trigger": null,
+                    "requirements": null,
+                    "description": "<p>You attempt to detect creatures or objects.  Some creatures that you detect may not be precisely located, depending on their visibility or the senses you used.  <b>Critical Successes</b> can allow you to locate anything that you found while seeking.</p>"
+                },
+                {
+                    "key": "sense_motive",
+                    "name": "Sense Motive",
+                    "action_type": "action",
+                    "traits": "concentrate,secret",
+                    "icon": "https://storage.googleapis.com/tf-overlays-db/p2e/icons/action-1.png",
+                    "bucket": "tf-overlays-db",
+                    "object": "p2e-actions.json",
+                    "trigger": null,
+                    "requirements": null,
+                    "description": "<p>You try to tell if a creature is being honest.  Your <b>Perception</b> vs the creature's <b>Deception</b> DC is secretly rolled by the DM.  <b>Critical Failures</b> may present you false intuition, but you believe it to be true.</p>"
+                },
+                {
+                    "key": "stand",
+                    "name": "Stand",
+                    "action_type": "action",
+                    "traits": "move",
+                    "icon": "https://storage.googleapis.com/tf-overlays-db/p2e/icons/action-1.png",
+                    "bucket": "tf-overlays-db",
+                    "object": "p2e-actions.json",
+                    "trigger": null,
+                    "requirements": null,
+                    "description": "<p>You stand up from prone.</p>"
+                },
+                {
+                    "key": "step",
+                    "name": "Step",
+                    "action_type": "action",
+                    "traits": "move",
+                    "icon": "https://storage.googleapis.com/tf-overlays-db/p2e/icons/action-1.png",
+                    "bucket": "tf-overlays-db",
+                    "object": "p2e-actions.json",
+                    "trigger": null,
+                    "requirements": "Your Speed is at least 10 feet.",
+                    "description": "<p>Carefully scoot 5 feet without triggering reactions such as Attacks of Opportunity.  You can only <b>Step</b> using land speed, and you cannot <b>Step</b> into difficult terrain.</p>"
+                },
+                {
+                    "key": "stride",
+                    "name": "Stride",
+                    "action_type": "action",
+                    "traits": "move",
+                    "icon": "https://storage.googleapis.com/tf-overlays-db/p2e/icons/action-1.png",
+                    "bucket": "tf-overlays-db",
+                    "object": "p2e-actions.json",
+                    "trigger": null,
+                    "requirements": null,
+                    "description": "<p>Move up to your Speed</p>"
+                },
+                {
+                    "key": "strike",
+                    "name": "Strike",
+                    "action_type": "action",
+                    "traits": "attack",
+                    "icon": "https://storage.googleapis.com/tf-overlays-db/p2e/icons/action-1.png",
+                    "bucket": "tf-overlays-db",
+                    "object": "p2e-actions.json",
+                    "trigger": null,
+                    "requirements": null,
+                    "description": "<p>Make an attack roll with the weapon you are using.  If you meet <em>or</em> beat the target's AC, you succeed.  On a <b>Critical Success</b>, this critical hit does double the damage you rolled for the strike.</p>"
+                },
+                {
+                    "key": "take_cover",
+                    "name": "Take Cover",
+                    "action_type": "action",
+                    "traits": null,
+                    "icon": "https://storage.googleapis.com/tf-overlays-db/p2e/icons/action-1.png",
+                    "bucket": "tf-overlays-db",
+                    "object": "p2e-actions.json",
+                    "trigger": null,
+                    "requirements": "You are benefiting from cover, could take cover, or are prone.",
+                    "description": "<p>Focus on taking advantage of your cover, improving its protection.  This increases you effective AC, <b>Reflex</b> saves (against some effects), <b>Stealth</b> checks to hide/sneak.  This lasts until you move, attack or become unconsious.</p>"
+                },
+                {
+                    "key": "placeholder",
+                    "name": "placeholder",
+                    "action_type": "action",
+                    "traits": null,
+                    "icon": "https://storage.googleapis.com/tf-overlays-db/p2e/icons/action-1.png",
+                    "bucket": "tf-overlays-db",
+                    "object": "p2e-actions.json",
+                    "trigger": null,
+                    "requirements": null,
+                    "description": "<p>description</p>"
+                }
+            ],
+            "characters": [
+
+            ],
+            "skills": [
+
+            ],
+            "spells": [
+
+            ]
         }
     ]
 }
